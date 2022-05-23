@@ -197,20 +197,24 @@ const index = async (req, res, next) => {
             criteria = {...criteria, category: categoryResult._id}
           }
         }
+        
         if(tags.length){
           let tagsResult = await Tag.find({name: {$in: tags}});
           if(tagsResult.length > 0) {
             criteria = {...criteria, tags: {$in: tagsResult.map(tag => tag._id)}}
         }
     }
-        console.log(criteria);
+        let count = await Product.find().countDocuments();
         let product = await Product
         .find(criteria)
         .skip(parseInt(skip))
         .limit(parseInt(limit))
         .populate('category')
         .populate('tags');
-        return res.json(product);
+        return res.json({
+            data: product,
+            count
+        });
     }   catch (err) {
         next(err);
     }
