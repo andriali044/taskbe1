@@ -13,7 +13,7 @@ const store = async (req, res, next) => {
         if(payload.category){
             let category =
               await Category
-              .findOne({name: {$regex: payload.category, $options: '1'}});
+              .findOne({name: {$regex: payload.category, $options: 'i'}});
             if(category){
                 payload = {...payload, category: category._id};
             } else {

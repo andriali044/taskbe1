@@ -1,4 +1,4 @@
-const {getToken} = require('../utils');
+const {getToken, policyfor} = require('../utils');
 const jwt = require('jsonwebtoken');
 const config = require('../app/config');
 const User = require('../app/user/model');
@@ -7,6 +7,7 @@ function decodeToken() {
     return async function(req, res, next) {
       try {
         let token = getToken(req);
+        console.log(token);
 
         if(!token) return next();
 
@@ -14,6 +15,7 @@ function decodeToken() {
 
         let user = await User.findOne({token: {$in: [token]}});
 
+        console.log(user);
         if(!user) {
           res.json({
             error: 1,
@@ -35,6 +37,19 @@ function decodeToken() {
     }
   }
 
-module.exports = {
-    decodeToken
+  function police_check(action, subject) {
+    return function(req, res, next) {
+      let policy = policyFor(req.user);
+      if(!policy.can(action, subject)) {
+        return res.json({
+          error: 1,
+          message: `you are not allowed to ${action} ${subject}`
+        });
+      }
+      next();
+    }
+  }
+  module.exports = {
+    decodeToken,
+    police_check
 }
